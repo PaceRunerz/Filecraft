@@ -1,0 +1,5 @@
+<IfModule mod_headers.c>
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:;"
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "DENY"
+</IfModule>
