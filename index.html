@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileCraft - Universal File Converter</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="config.js"></script>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .tagline {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        /* Main Converter Section */
+        .converter-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin: 40px 0 20px;
+            font-weight: 600;
+            font-size: 28px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        /* File Drop Area */
+        .drop-area {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+            background-color: #f8fafc;
+        }
+        
+        .drop-area:hover, .drop-area.highlight {
+            border-color: #3498db;
+            background-color: #e8f4fc;
+        }
+        
+        .drop-area p {
+            margin-bottom: 10px;
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .drop-area .browse-link {
+            color: #3498db;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tool-card p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .tool-icon {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        /* File Display */
+        .file-display {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            min-height: 100px;
+        }
+
+        .file-display-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .file-display-item:last-child {
+            border-bottom: none;
+        }
+        
+        .empty-state {
+            color: #95a5a6;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Buttons */
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+        
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .feature h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 0;
+            border-top: 1px solid #e0e0e0;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+        
+        .heart {
+            color: #e74c3c;
+        }
+
+        /* Tool Page Specific Input */
+        #toolUrlInputInstance { 
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        /* Options Styling */
+        .resolution-options, .api-options { /* Renamed .ffmpeg-options to .api-options */
+            margin-top: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-radius: 6px;
+        }
+        
+        .resolution-options label, .api-options label {
+            margin-right: 10px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .resolution-options input[type="number"],
+        .resolution-options select,
+        .api-options select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #bdc3c7;
+            margin-right: 15px;
+        }
+
+        /* Progress Bar for File Display Item */
+        .file-display-item .progress-bar-container { /* Target specifically within file item */
+            width: 150px; /* Or adjust as needed */
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: auto; /* Pushes it to the right */
+        }
+        .file-display-item .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #3498db;
+            transition: width 0.2s ease-in-out;
+            text-align: center;
+            color: white;
+            font-size: 10px;
+            line-height: 8px;
+        }
+        .file-display-item .progress-text {
+            font-size: 12px;
+            margin-left: 10px;
+            color: #2c3e50;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 36px;
+            }
+            
+            .tagline {
+                font-size: 18px;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .drop-area {
+                padding: 40px 20px;
+            }
+            
+            .resolution-options, .api-options {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .resolution-options input[type="number"],
+            .resolution-options select,
+            .api-options select {
+                width: 100%;
+                margin-right: 0;
+            }
+            .file-display-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .file-display-item .progress-bar-container {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+             .file-display-item .progress-text {
+                margin-left: 0;
+                margin-top: 5px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">FileCraft</div>
+            <p class="tagline">Transform your files instantly with our powerful conversion tools</p>
+        </header>
+        
+        <div id="mainPageContentWrapper">
+            <section class="converter-section" id="mainUniversalConverterSection">
+                <h1>Universal File Converter</h1>
+                <p class="description">
+                    Drag and drop your files below to convert them to your desired format. 
+                    Supports documents, images, and media files with batch processing.
+                </p>
+                
+                <div class="drop-area" id="mainDropArea">
+                    <p><i class="fas fa-cloud-upload-alt" style="font-size: 48px; margin-bottom: 15px; color: #3498db;"></i></p>
+                    <p>Drag & drop your files here</p>
+                    <p>or <span class="browse-link" id="mainBrowseLink">browse files from your device</span></p>
+                    <input type="file" id="mainFileInput" class="hidden" multiple>
+                </div>
+                
+                <div class="file-display" id="mainFileDisplay">
+                    <p class="empty-state">No files selected yet</p>
+                </div>
+                
+                <button class="btn btn-large" id="mainConvertBtn" disabled>
+                    <i class="fas fa-exchange-alt"></i> Convert Files
+                </button>
+            </section>
+            
+            <section id="whyChooseSection">
+                <h2>Why Choose FileCraft?</h2>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-cogs" style="font-size: 36px; color: #3498db; margin-bottom: 15px;"></i>
+                        <h3>Versatile Tools</h3>
+                        <p>Wide range of converters for documents, images, and media.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-cloud" style="font-size: 36px; color: #3498db; margin-bottom: 15px;"></i>
+                        <h3>Cloud Powered</h3>
+                        <p>Reliable conversions using robust cloud-based APIs.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-bolt" style="font-size: 36px; color: #3498db; margin-bottom: 15px;"></i>
+                        <h3>User Friendly</h3>
+                        <p>Simple drag & drop interface for ease of use.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="pdfToolsSection">
+                <h2>PDF Conversion Tools</h2>
+                <p class="description">Convert to and from PDF format with our specialized tools</p>
+                <div class="tools-grid">
+                    <div class="tool-card" data-tool="image-to-pdf">
+                        <div class="tool-icon"><i class="fas fa-file-pdf"></i></div>
+                        <h3>Image to PDF</h3>
+                        <p>Convert JPG, PNG to PDF documents</p>
+                    </div>
+                    <div class="tool-card" data-tool="pdf-to-word">
+                        <div class="tool-icon"><i class="fas fa-file-word"></i></div>
+                        <h3>PDF to Word</h3>
+                        <p>Convert PDF to editable DOC/DOCX (API)</p>
+                    </div>
+                    <div class="tool-card" data-tool="word-to-pdf">
+                        <div class="tool-icon"><i class="fas fa-file-pdf"></i></div>
+                        <h3>Word to PDF</h3>
+                        <p>Convert DOC/DOCX to PDF format (API)</p>
+                    </div>
+                    <div class="tool-card" data-tool="pdf-to-powerpoint">
+                        <div class="tool-icon"><i class="fas fa-file-powerpoint"></i></div>
+                        <h3>PDF to PowerPoint</h3>
+                        <p>Convert PDF to editable PPT/PPTX (API)</p>
+                    </div>
+                     <div class="tool-card" data-tool="powerpoint-to-pdf">
+                        <div class="tool-icon"><i class="fas fa-file-pdf"></i></div>
+                        <h3>PowerPoint to PDF</h3>
+                        <p>Convert PPT/PPTX to PDF (API)</p>
+                    </div>
+                    <div class="tool-card" data-tool="pdf-to-jpg">
+                        <div class="tool-icon"><i class="fas fa-file-image"></i></div>
+                        <h3>PDF to JPG</h3>
+                        <p>Convert PDF pages to image files (API)</p>
+                    </div>
+                    <div class="tool-card" data-tool="compress-pdf">
+                        <div class="tool-icon"><i class="fas fa-compress-alt"></i></div>
+                        <h3>Compress PDF</h3>
+                        <p>Reduce PDF file size (API)</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="imageToolsSection">
+                <h2>Image Conversion Tools</h2>
+                <p class="description">Convert and enhance your images with our powerful tools</p>
+                <div class="tools-grid">
+                    <div class="tool-card" data-tool="jpg-to-png">
+                        <div class="tool-icon"><i class="fas fa-file-image"></i></div>
+                        <h3>JPG to PNG</h3>
+                        <p>Convert JPG images to PNG format</p>
+                    </div>
+                    <div class="tool-card" data-tool="png-to-jpg">
+                        <div class="tool-icon"><i class="fas fa-file-image"></i></div>
+                        <h3>PNG to JPG</h3>
+                        <p>Convert PNG images to JPG format</p>
+                    </div>
+                    <div class="tool-card" data-tool="webp-converter">
+                        <div class="tool-icon"><i class="fas fa-file-image"></i></div>
+                        <h3>WebP Converter</h3>
+                        <p>Convert to/from WebP image format</p>
+                    </div>
+                    <div class="tool-card" data-tool="reduce-resolution">
+                        <div class="tool-icon"><i class="fas fa-compress-alt"></i></div>
+                        <h3>Reduce Resolution</h3>
+                        <p>Decrease image resolution and size</p>
+                    </div>
+                    <div class="tool-card" data-tool="enhance-resolution"> <div class="tool-icon"><i class="fas fa-expand-alt"></i></div>
+                        <h3>Enhance Resolution</h3>
+                        <p>AI-powered image upscaling (Simulated)</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="mediaToolsSection">
+                <h2>Media Conversion Tools</h2>
+                <p class="description">Convert and extract media files with ease using CloudConvert API</p>
+                <div class="tools-grid">
+                    <div class="tool-card" data-tool="mp4-to-mp3">
+                        <div class="tool-icon"><i class="fas fa-file-audio"></i></div>
+                        <h3>MP4 to MP3</h3>
+                        <p>Extract audio from video files (CloudConvert)</p>
+                    </div>
+                    <div class="tool-card" data-tool="url-to-mp3"> <div class="tool-icon"><i class="fas fa-link"></i></div>
+                        <h3>URL to MP3</h3>
+                        <p>Download audio from video URLs (CloudConvert)</p>
+                    </div>
+                    <div class="tool-card" data-tool="video-converter">
+                        <div class="tool-icon"><i class="fas fa-file-video"></i></div>
+                        <h3>Video Converter</h3>
+                        <p>Convert between video formats (CloudConvert)</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="dedicatedToolUIPage" class="container" style="display: none; margin-top: 20px;">
+            <button id="backToMainBtn" class="btn" style="margin-bottom: 20px;"><i class="fas fa-arrow-left"></i> Back to Tools</button>
+            <section class="converter-section">
+                <h1 id="toolPageTitle">Specific Tool Converter</h1>
+                <p id="toolPageDescription" class="description">Upload your file to convert.</p>
+                
+                <div id="toolInputArea"></div>
+                
+                <div id="toolOptionsContainer" class="hidden"></div>
+
+                <div class="file-display" id="toolFileDisplay">
+                    <p class="empty-state">No input provided yet</p>
+                </div>
+                
+                <button class="btn btn-large" id="toolConvertBtn">
+                    <i class="fas fa-exchange-alt"></i> Convert
+                </button>
+                
+                <div id="toolOutputSection" style="margin-top: 30px; display: none; background-color: #e8f4fc; padding: 20px; border-radius: 8px; text-align:center;">
+                    <h4 id="toolOutputTitle" style="color: #2c3e50; margin-bottom:15px; font-size: 20px;">Conversion Complete!</h4>
+                    <p id="convertedFileNameDisplay" style="font-weight:500; margin-bottom:15px; font-size: 18px; color: #333;"></p>
+                    <button class="btn" id="downloadConvertedFileBtn"><i class="fas fa-download"></i> Download File</button>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <footer>
+        <div>Made with <span class="heart">♥</span> for seamless file conversion</div>
+        <div style="margin-top: 10px; font-style: italic;">Created with @Lovable ✅</div>
+    </footer>
+
+  <script>
+        // --- START CLOUDCONVERT CONFIGURATION ---
+        // !!! IMPORTANT SECURITY WARNING !!!
+        // DO NOT expose your API key directly in client-side JavaScript in a production environment.
+        // This key should be kept secret on a backend server that proxies requests to CloudConvert.
+        // For demonstration purposes only, you can place your key here.
+        const CLOUDCONVERT_API_KEY = 'insert your API key'; // <-- YOUR ACTUAL API KEY GOES HERE
+        if (CLOUDCONVERT_API_KEY === 'YOUR_CLOUDCONVERT_API_KEY') {
+            console.warn('CloudConvert API Key not set. Media conversions will fail.');
+        }
+        // --- END CLOUDCONVERT CONFIGURATION ---
+
+
+        // DOM elements
+        const mainDropArea = document.getElementById('mainDropArea');
+        const mainFileInput = document.getElementById('mainFileInput');
+        const mainBrowseLink = document.getElementById('mainBrowseLink');
+        const mainConvertBtn = document.getElementById('mainConvertBtn');
+        const mainFileDisplay = document.getElementById('mainFileDisplay');
+        const mainPageContentWrapper = document.getElementById('mainPageContentWrapper');
+        const dedicatedToolUIPage = document.getElementById('dedicatedToolUIPage');
+        
+        let toolDropAreaInstance, toolBrowseLinkInstance, toolFileInputInstance, toolUrlInput;
+        const toolPageTitle = document.getElementById('toolPageTitle');
+        const toolPageDescription = document.getElementById('toolPageDescription');
+        const toolInputArea = document.getElementById('toolInputArea');
+        const toolOptionsContainer = document.getElementById('toolOptionsContainer');
+        const toolFileDisplay = document.getElementById('toolFileDisplay');
+        const toolConvertBtn = document.getElementById('toolConvertBtn');
+        const toolOutputSection = document.getElementById('toolOutputSection');
+        const toolOutputTitle = document.getElementById('toolOutputTitle');
+        const convertedFileNameDisplay = document.getElementById('convertedFileNameDisplay');
+        const downloadConvertedFileBtn = document.getElementById('downloadConvertedFileBtn');
+        const backToMainBtn = document.getElementById('backToMainBtn');
+
+        let currentToolFiles = []; 
+        let convertedFileBlob = null; // For client-side conversions
+        let convertedFileUrl = null; // For CloudConvert downloads
+
+        // Tool configurations
+        const toolConfigs = {
+            // Client-side Image Tools (using canvas)
+            'image-to-pdf': { title: 'Image to PDF Converter', description: 'Convert JPG or PNG images to a PDF document.', accept: 'image/jpeg,image/png', outputExtension: '.pdf', requiresFileUpload: true, outType: 'application/pdf', isReal: true, usesCloudConvert: false },
+            'jpg-to-png': { title: 'JPG to PNG Converter', description: 'Convert JPG images to PNG format.', accept: 'image/jpeg', outputExtension: '.png', requiresFileUpload: true, outType: 'image/png', isReal: true, usesCloudConvert: false },
+            'png-to-jpg': { title: 'PNG to JPG Converter', description: 'Convert PNG images to JPG format.', accept: 'image/png', outputExtension: '.jpg', requiresFileUpload: true, outType: 'image/jpeg', isReal: true, usesCloudConvert: false },
+            'webp-converter': { title: 'WebP Converter', description: 'Convert JPG/PNG to WebP, or WebP to PNG.', accept: 'image/webp,image/jpeg,image/png', outputExtensionDynamic: true, requiresFileUpload: true, isReal: true, usesCloudConvert: false },
+            'reduce-resolution': { title: 'Reduce Image Resolution', description: 'Decrease the resolution and size of your images.', accept: 'image/*', outputExtension: '_resized.jpg', requiresFileUpload: true, outType: 'image/jpeg', isReal: true, hasOptions: true, usesCloudConvert: false },
+            
+            // CloudConvert API Tools (Media & some Docs)
+            'mp4-to-mp3': { title: 'MP4 to MP3 Converter', description: 'Extract audio from MP4 video files using CloudConvert.', accept: 'video/mp4,video/webm,video/ogg,video/avi,video/mov,video/mkv,video/flv', outputFormat: 'mp3', requiresFileUpload: true, outType: 'audio/mpeg', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: null /* auto-detect */ },
+            'video-converter': { title: 'Video Converter', description: 'Convert video files using CloudConvert.', accept: 'video/*', outputFormatDynamic: true, // Will get from UI
+                requiresFileUpload: true, isReal: true, usesCloudConvert: true, hasOptions: true, cloudConvertInputFormat: null /* auto-detect */ },
+            'url-to-mp3': { title: 'URL to MP3 Downloader', description: 'Enter a video URL to convert its audio to MP3 using CloudConvert.', inputType: 'url', outputFormat: 'mp3', requiresFileUpload: false, inputPlaceholder: 'Enter video URL (e.g., https://example.com/video.mp4)', outType: 'audio/mpeg', isReal: true, usesCloudConvert: true },
+
+            // Simulated for now, but can be switched to CloudConvert
+            'pdf-to-word': { title: 'PDF to Word Converter', description: 'Convert PDF to DOCX (CloudConvert).', accept: '.pdf,application/pdf', outputFormat: 'docx', requiresFileUpload: true, outType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: 'pdf' },
+            'word-to-pdf': { title: 'Word to PDF Converter', description: 'Convert Word to PDF (CloudConvert).', accept: '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', outputFormat: 'pdf', requiresFileUpload: true, outType: 'application/pdf', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: null /* auto-detect */ },
+            'pdf-to-powerpoint': { title: 'PDF to PowerPoint Converter', description: 'Convert PDF to PPTX (CloudConvert).', accept: '.pdf,application/pdf', outputFormat: 'pptx', requiresFileUpload: true, outType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: 'pdf' },
+            'powerpoint-to-pdf': { title: 'PowerPoint to PDF Converter', description: 'Convert PPT/PPTX to PDF (CloudConvert).', accept: '.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation', outputFormat: 'pdf', requiresFileUpload: true, outType: 'application/pdf', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: null /* auto-detect */ },
+            'pdf-to-jpg': { title: 'PDF to JPG Converter', description: 'Convert PDF pages to JPG images (CloudConvert).', accept: '.pdf,application/pdf', outputFormat: 'jpg', requiresFileUpload: true, outType: 'image/jpeg', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: 'pdf' },
+            'compress-pdf': { title: 'Compress PDF Tool', description: 'Reduce PDF file size (CloudConvert).', accept: '.pdf,application/pdf', outputFormat: 'pdf', requiresFileUpload: true, outType: 'application/pdf', isReal: true, usesCloudConvert: true, cloudConvertInputFormat: 'pdf', cloudConvertTaskOptions: { operation: 'optimize', engine: 'adobe' /* or other engines */} },
+            
+            // Simulated
+            'enhance-resolution': { title: 'Enhance Image Resolution (AI Upscaling)', description: 'Use AI to upscale your images. (Simulated)', accept: 'image/*', outputExtension: '_enhanced.jpg', requiresFileUpload: true, outType: 'image/jpeg', isReal: false, usesCloudConvert: false },
+        };
+
+        // Helper functions
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        function formatFileSize(bytes) { if (bytes === 0) return '0 Bytes'; const k = 1024; const sizes = ['Bytes', 'KB', 'MB', 'GB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]; }
+        
+        function createFileElement(file, fileId = null) {
+            const fileElement = document.createElement('div');
+            fileElement.classList.add('file-display-item');
+            if (fileId) fileElement.dataset.fileId = fileId;
+
+            let iconClass = 'fa-file'; // Default icon
+            if (file.type) {
+                if (file.type.startsWith('image/')) iconClass = 'fa-file-image';
+                else if (file.type === 'application/pdf') iconClass = 'fa-file-pdf';
+                else if (file.type.includes('wordprocessingml') || file.type.includes('msword')) iconClass = 'fa-file-word';
+                else if (file.type.includes('presentationml') || file.type.includes('ms-powerpoint')) iconClass = 'fa-file-powerpoint';
+                else if (file.type.startsWith('video/')) iconClass = 'fa-file-video';
+                else if (file.type.startsWith('audio/')) iconClass = 'fa-file-audio';
+            } else if (file.name) { // Fallback for URL inputs where type might not be available
+                 if (/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i.test(file.name)) iconClass = 'fa-file-image';
+                 else if (/\.pdf$/i.test(file.name)) iconClass = 'fa-file-pdf';
+                 else if (/\.(docx?|odt)$/i.test(file.name)) iconClass = 'fa-file-word';
+                 else if (/\.(pptx?|odp)$/i.test(file.name)) iconClass = 'fa-file-powerpoint';
+                 else if (/\.(mp4|mov|avi|mkv|webm|flv)$/i.test(file.name)) iconClass = 'fa-file-video';
+                 else if (/\.(mp3|wav|ogg|aac|flac)$/i.test(file.name)) iconClass = 'fa-file-audio';
+            }
+
+
+            const mainContent = document.createElement('div');
+            mainContent.style.display = 'flex';
+            mainContent.style.alignItems = 'center';
+            mainContent.style.flexGrow = '1';
+
+            const iconEl = document.createElement('i');
+            iconEl.className = `fas ${iconClass}`;
+            iconEl.style.marginRight = '10px';
+            iconEl.style.color = '#3498db';
+            iconEl.style.fontSize = '20px';
+            mainContent.appendChild(iconEl);
+
+            const textContainer = document.createElement('div');
+            const fileNameEl = document.createElement('div');
+            fileNameEl.style.fontWeight = '500';
+            fileNameEl.textContent = file.name;
+            textContainer.appendChild(fileNameEl);
+
+            if(file.size) {
+                const fileMetaEl = document.createElement('div');
+                fileMetaEl.style.fontSize = '12px';
+                fileMetaEl.style.color = '#7f8c8d';
+                fileMetaEl.textContent = `${formatFileSize(file.size)} • ${file.type || 'Unknown type'}`;
+                textContainer.appendChild(fileMetaEl);
+            }
+            mainContent.appendChild(textContainer);
+            fileElement.appendChild(mainContent);
+            
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'progress-bar-container hidden'; // Hidden by default
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            progressContainer.appendChild(progressBar);
+            fileElement.appendChild(progressContainer);
+
+            const progressText = document.createElement('span'); // For status text
+            progressText.className = 'progress-text hidden';
+            fileElement.appendChild(progressText);
+            
+            return fileElement;
+        }
+
+
+
+        function mainPageHighlight() { mainDropArea.classList.add('highlight'); }
+        function mainPageUnhighlight() { mainDropArea.classList.remove('highlight'); }
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            if (mainDropArea) mainDropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false); 
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            if (mainDropArea) mainDropArea.addEventListener(eventName, mainPageHighlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            if (mainDropArea) mainDropArea.addEventListener(eventName, mainPageUnhighlight, false);
+        });
+
+        if (mainDropArea) mainDropArea.addEventListener('drop', handleMainDrop, false);
+        if (mainBrowseLink) mainBrowseLink.addEventListener('click', () => mainFileInput.click());
+        if (mainFileInput) mainFileInput.addEventListener('change', (e) => handleMainFiles(e.target.files));
+        
+        function handleMainDrop(e) { handleMainFiles(e.dataTransfer.files); }
+
+        function handleMainFiles(files) {
+            if (files.length > 0) {
+                mainFileDisplay.innerHTML = ''; 
+                Array.from(files).forEach(file => mainFileDisplay.appendChild(createFileElement(file)));
+                mainConvertBtn.disabled = false;
+            } else {
+                mainFileDisplay.innerHTML = '<p class="empty-state">No files selected yet</p>';
+                mainConvertBtn.disabled = true;
+            }
+        }
+        
+        if (mainConvertBtn) mainConvertBtn.addEventListener('click', () => {
+            alert('Main Universal Converter: This is a general file drop area. Please select a specific tool for conversion.');
+        });
+
+
+        function showMainPage() {
+            mainPageContentWrapper.style.display = 'block';
+            dedicatedToolUIPage.style.display = 'none';
+            toolFileDisplay.innerHTML = '<p class="empty-state">No input provided yet</p>';
+            toolConvertBtn.disabled = true;
+            toolOutputSection.style.display = 'none';
+            currentToolFiles = [];
+            convertedFileBlob = null;
+            convertedFileUrl = null;
+            if (toolUrlInput) toolUrlInput.value = '';
+            toolOptionsContainer.classList.add('hidden');
+            toolOptionsContainer.innerHTML = ''; 
+        }
+
+        async function showToolPage(toolId) {
+            const config = toolConfigs[toolId];
+            if (!config) return;
+
+            mainPageContentWrapper.style.display = 'none';
+            dedicatedToolUIPage.style.display = 'block';
+            window.scrollTo(0,0); 
+            
+            toolPageTitle.textContent = config.title;
+            toolPageDescription.textContent = config.description;
+            toolConvertBtn.disabled = true; 
+            toolOutputSection.style.display = 'none';
+            convertedFileBlob = null;
+            convertedFileUrl = null;
+            toolFileDisplay.innerHTML = '<p class="empty-state">No input provided yet</p>';
+            currentToolFiles = [];
+            toolOptionsContainer.classList.add('hidden');
+            toolOptionsContainer.innerHTML = '';
+
+            if (config.hasOptions) {
+                toolOptionsContainer.classList.remove('hidden');
+                if (toolId === 'reduce-resolution' && !config.usesCloudConvert) {
+                    toolOptionsContainer.innerHTML = `
+                        <div class="resolution-options">
+                            <div><label for="resScale">Scale (%):</label><input type="number" id="resScale" value="50" min="1" max="100"></div>
+                            <div><label for="resMaxWidth">Max Width (px, optional):</label><input type="number" id="resMaxWidth" placeholder="e.g., 1920"></div>
+                            <div><label for="resMaxHeight">Max Height (px, optional):</label><input type="number" id="resMaxHeight" placeholder="e.g., 1080"></div>
+                            <div><label for="resFormat">Output Format:</label><select id="resFormat"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div>
+                        </div>`;
+                } else if (toolId === 'video-converter' && config.usesCloudConvert) {
+                     toolOptionsContainer.innerHTML = `
+                        <div class="api-options">
+                            <div>
+                                <label for="videoOutputFormat">Output Format:</label>
+                                <select id="videoOutputFormat">
+                                    <option value="mp4">MP4</option><option value="webm">WebM</option><option value="mov">MOV</option>
+                                    <option value="avi">AVI</option><option value="mkv">MKV</option><option value="gif">GIF</option>
+                                    <option value="mp3">MP3 (Audio Only)</option> 
+                                </select>
+                            </div>
+                        </div>`;
+                }
+                // Add more specific options for other CloudConvert tools if needed (e.g., 'compress-pdf' options)
+            }
+
+
+            if (config.requiresFileUpload === false || config.inputType === 'url') { 
+                toolInputArea.innerHTML = `<input type="text" id="toolUrlInputInstance" placeholder="${config.inputPlaceholder || 'Enter URL'}" autocomplete="off">`;
+                toolUrlInput = document.getElementById('toolUrlInputInstance');
+                toolUrlInput.addEventListener('input', () => {
+                    const url = toolUrlInput.value.trim();
+                    toolConvertBtn.disabled = !url;
+                    if (url) {
+                        // Create a pseudo-file object for display
+                        currentToolFiles = [{ name: url, type: 'url', size: null }];
+                        toolFileDisplay.innerHTML = '';
+                        toolFileDisplay.appendChild(createFileElement(currentToolFiles[0], "file-0"));
+                    } else {
+                        currentToolFiles = [];
+                        toolFileDisplay.innerHTML = '<p class="empty-state">No input provided yet</p>';
+                    }
+                    toolOutputSection.style.display = 'none'; 
+                    convertedFileBlob = null; convertedFileUrl = null;
+                });
+            } else { 
+                const isSingleFileTool = (config.usesCloudConvert && toolId !== 'image-to-pdf') || toolId === 'image-to-pdf'; // CloudConvert usually one main input file
+                toolInputArea.innerHTML = `
+                    <div class="drop-area" id="toolDropAreaInstance">
+                        <p><i class="fas fa-cloud-upload-alt" style="font-size: 48px; margin-bottom: 15px; color: #3498db;"></i></p>
+                        <p>Drag & drop your file${isSingleFileTool ? '' : 's'} here for <span id="toolNameDisplayInDrop">${config.title}</span></p>
+                        <p>or <span class="browse-link" id="toolBrowseLinkInstance">browse file${isSingleFileTool ? '' : 's'}</span></p>
+                        <input type="file" id="toolFileInputInstance" class="hidden" ${config.accept ? `accept="${config.accept}"` : ''} ${isSingleFileTool ? '' : 'multiple'}>
+                    </div>`;
+
+                toolDropAreaInstance = document.getElementById('toolDropAreaInstance');
+                toolBrowseLinkInstance = document.getElementById('toolBrowseLinkInstance');
+                toolFileInputInstance = document.getElementById('toolFileInputInstance');
+
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => toolDropAreaInstance.addEventListener(eventName, preventDefaults, false));
+                ['dragenter', 'dragover'].forEach(eventName => toolDropAreaInstance.addEventListener(eventName, () => toolDropAreaInstance.classList.add('highlight'), false));
+                ['dragleave', 'drop'].forEach(eventName => toolDropAreaInstance.addEventListener(eventName, () => toolDropAreaInstance.classList.remove('highlight'), false));
+
+                toolDropAreaInstance.addEventListener('drop', (e) => handleToolDrop(e, toolId), false);
+                toolBrowseLinkInstance.addEventListener('click', () => toolFileInputInstance.click());
+                toolFileInputInstance.addEventListener('change', (e) => handleToolFiles(e.target.files, toolId));
+            }
+            toolConvertBtn.dataset.toolId = toolId; 
+        }
+
+        function handleToolDrop(e, toolId) { handleToolFiles(e.dataTransfer.files, toolId); }
+
+        function handleToolFiles(files, toolId) {
+            const config = toolConfigs[toolId];
+            if (!files || files.length === 0) {
+                toolFileDisplay.innerHTML = '<p class="empty-state">No input provided yet</p>';
+                currentToolFiles = [];
+                toolConvertBtn.disabled = true;
+                return;
+            }
+            
+            const isSingleFileTool = (config.usesCloudConvert && toolId !== 'image-to-pdf') || toolId === 'image-to-pdf';
+            if (isSingleFileTool && files.length > 1) {
+                alert(`The ${config.title} tool processes one file at a time. Please select a single file.`);
+                if(toolFileInputInstance) toolFileInputInstance.value = ''; // Reset file input
+                return;
+            }
+
+            currentToolFiles = Array.from(files);
+            toolFileDisplay.innerHTML = '';
+            currentToolFiles.forEach((file, index) => {
+                toolFileDisplay.appendChild(createFileElement(file, `file-${index}`));
+            });
+            
+            toolConvertBtn.disabled = false;
+            toolOutputSection.style.display = 'none';
+            convertedFileBlob = null; convertedFileUrl = null;
+        }
+
+        if (backToMainBtn) backToMainBtn.addEventListener('click', showMainPage);
+
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const toolId = card.dataset.tool;
+                showToolPage(toolId);
+            });
+        });
+
+        // --- Conversion Logic ---
+        if (toolConvertBtn) toolConvertBtn.addEventListener('click', async () => {
+            const toolId = toolConvertBtn.dataset.toolId;
+            const config = toolConfigs[toolId];
+            if (!config || (currentToolFiles.length === 0 && config.requiresFileUpload !== false && config.inputType !== 'url')) {
+                 alert("Please select a file or provide input.");
+                 return;
+            }
+
+            toolConvertBtn.disabled = true;
+            toolConvertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            toolOutputSection.style.display = 'none';
+            convertedFileBlob = null; convertedFileUrl = null;
+            updateFileProgress(0, "Starting...", "file-0"); // Assuming single file for API for now
+
+            try {
+                if (config.usesCloudConvert) {
+                    if (CLOUDCONVERT_API_KEY === 'YOUR_CLOUDCONVERT_API_KEY') {
+                        throw new Error("CloudConvert API Key is not configured. Please set it in the script.");
+                    }
+                    await handleCloudConvertConversion(toolId, config);
+                } else if (config.isReal) { // Client-side real conversions
+                    if (toolId === 'image-to-pdf') await handleImageToPdf(config);
+                    else if (toolId === 'jpg-to-png' || toolId === 'png-to-jpg' || toolId === 'webp-converter') await handleSimpleImageConversion(toolId, config);
+                    else if (toolId === 'reduce-resolution') await handleReduceResolution(config);
+                    else simulateConversion(config); // Fallback for unhandled real
+                } else { // Simulated conversions
+                    simulateConversion(config);
+                }
+            } catch (error) {
+                console.error(`Error during ${toolId} conversion:`, error);
+                toolOutputTitle.textContent = 'Conversion Failed!';
+                convertedFileNameDisplay.textContent = `An error occurred: ${error.message || error}`;
+                downloadConvertedFileBtn.classList.add('hidden');
+                toolOutputSection.style.display = 'block';
+                updateFileProgress(0, `Error: ${error.message.substring(0,30)}...`, "file-0", true);
+            } finally {
+                toolConvertBtn.disabled = false;
+                toolConvertBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Convert';
+            }
+        });
+
+        function simulateConversion(config) {
+            updateFileProgress(50, "Simulating...", "file-0");
+            setTimeout(() => {
+                let outputFileName;
+                 if (config.outputExtensionDynamic && toolId === 'webp-converter' && currentToolFiles.length > 0) {
+                    const inputFile = currentToolFiles[0];
+                    const inputName = inputFile.name.substring(0, inputFile.name.lastIndexOf('.'));
+                    outputFileName = inputFile.type === 'image/webp' ? `${inputName}.png` : `${inputName}.webp`;
+                } else if (currentToolFiles.length > 0) {
+                    const inputName = currentToolFiles[0].name.substring(0, currentToolFiles[0].name.lastIndexOf('.') || currentToolFiles[0].name.length);
+                    outputFileName = inputName + (config.outputExtension || (config.outputFormat ? `.${config.outputFormat}` : '.converted'));
+                } else {
+                    outputFileName = "converted_file" + (config.outputExtension || (config.outputFormat ? `.${config.outputFormat}` : '.converted'));
+                }
+
+                convertedFileNameDisplay.textContent = outputFileName;
+                toolOutputTitle.textContent = 'Conversion Complete! (Simulated)';
+                downloadConvertedFileBtn.classList.remove('hidden');
+                convertedFileBlob = new Blob(["This is a simulated file."], { type: config.outType || 'application/octet-stream' });
+                toolOutputSection.style.display = 'block';
+                updateFileProgress(100, "Simulated Complete", "file-0");
+            }, 1500);
+        }
+        
+        // --- Client-side Image Conversion Functions (Keep these as they are fast and free) ---
+        async function handleImageToPdf(config) { /* ... (keep existing implementation) ... */ 
+            if (currentToolFiles.length === 0) throw new Error("No files selected for PDF conversion.");
+            const { PDFDocument } = PDFLib; const pdfDoc = await PDFDocument.create();
+            for (const file of currentToolFiles) {
+                const arrayBuffer = await file.arrayBuffer(); let image;
+                if (file.type === 'image/jpeg') image = await pdfDoc.embedJpg(arrayBuffer);
+                else if (file.type === 'image/png') image = await pdfDoc.embedPng(arrayBuffer);
+                else { console.warn(`Unsupported: ${file.type}`); continue; }
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+            }
+            const pdfBytes = await pdfDoc.save(); convertedFileBlob = new Blob([pdfBytes], { type: config.outType });
+            const inputFirstName = currentToolFiles[0].name.substring(0, currentToolFiles[0].name.lastIndexOf('.'));
+            convertedFileNameDisplay.textContent = `${inputFirstName}${config.outputExtension}`;
+            toolOutputTitle.textContent = 'Conversion Complete!';
+            downloadConvertedFileBtn.classList.remove('hidden'); toolOutputSection.style.display = 'block';
+        }
+        async function handleSimpleImageConversion(toolId, config) { /* ... (keep existing implementation) ... */
+            if (currentToolFiles.length === 0) throw new Error("No file selected.");
+            const file = currentToolFiles[0]; const outputType = config.outType; let outputExtension = config.outputExtension;
+            if (toolId === 'webp-converter') outputExtension = file.type === 'image/webp' ? '.png' : '.webp';
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const img = new Image();
+            return new Promise((resolve, reject) => {
+                img.onload = () => { canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
+                    canvas.toBlob(blob => { convertedFileBlob = blob;
+                        const inputName = file.name.substring(0, file.name.lastIndexOf('.'));
+                        convertedFileNameDisplay.textContent = inputName + outputExtension;
+                        toolOutputTitle.textContent = 'Conversion Complete!';
+                        downloadConvertedFileBtn.classList.remove('hidden'); toolOutputSection.style.display = 'block'; resolve();
+                    }, outputType, 0.92);
+                }; img.onerror = () => reject(new Error("Failed to load image.")); img.src = URL.createObjectURL(file);
+            });
+        }
+        async function handleReduceResolution(config) { /* ... (keep existing implementation) ... */
+            if (currentToolFiles.length === 0) throw new Error("No file selected.");
+            const file = currentToolFiles[0];
+            const scale = parseInt(document.getElementById('resScale').value)/100; const maxWidth = parseInt(document.getElementById('resMaxWidth').value) || null; const maxHeight = parseInt(document.getElementById('resMaxHeight').value) || null; const outputFormat = document.getElementById('resFormat').value;
+            let outputExtension; switch(outputFormat) { case 'image/png': outputExtension = '.png'; break; case 'image/webp': outputExtension = '.webp'; break; default: outputExtension = '.jpg';}
+            const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const img = new Image();
+            return new Promise((resolve, reject) => {
+                img.onload = () => { let newWidth = img.width * scale; let newHeight = img.height * scale;
+                    if (maxWidth && newWidth > maxWidth) { newHeight = (maxWidth / newWidth) * newHeight; newWidth = maxWidth; }
+                    if (maxHeight && newHeight > maxHeight) { newWidth = (maxHeight / newHeight) * newWidth; newHeight = maxHeight; }
+                    canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                    canvas.toBlob(blob => { convertedFileBlob = blob; const inputName = file.name.substring(0, file.name.lastIndexOf('.'));
+                        convertedFileNameDisplay.textContent = inputName + "_resized" + outputExtension;
+                        toolOutputTitle.textContent = 'Image Resized!';
+                        downloadConvertedFileBtn.classList.remove('hidden'); toolOutputSection.style.display = 'block'; resolve();
+                    }, outputFormat, 0.85);
+                }; img.onerror = () => reject(new Error("Failed to load image.")); img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // --- CloudConvert API Functions ---
+        function updateFileProgress(percentage, text, fileId = "file-0", isError = false) {
+            const fileElement = document.querySelector(`.file-display-item[data-file-id="${fileId}"]`);
+            if (fileElement) {
+                const progressBar = fileElement.querySelector('.progress-bar');
+                const progressContainer = fileElement.querySelector('.progress-bar-container');
+                const progressTextEl = fileElement.querySelector('.progress-text');
+
+                if (progressContainer) progressContainer.classList.remove('hidden');
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.style.backgroundColor = isError ? '#e74c3c' : '#3498db';
+                    if (percentage > 30) progressBar.textContent = `${percentage}%`; // Show text on bar if wide enough
+                    else progressBar.textContent = '';
+                }
+                if (progressTextEl) {
+                    progressTextEl.textContent = text;
+                    progressTextEl.classList.remove('hidden');
+                    progressTextEl.style.color = isError ? '#e74c3c' : '#2c3e50';
+                }
+            }
+        }
+
+
+        async function handleCloudConvertConversion(toolId, config) {
+            const inputFile = currentToolFiles[0]; // Assuming one file
+            let outputFormat = config.outputFormat;
+
+            if (config.outputFormatDynamic && toolId === 'video-converter') {
+                outputFormat = document.getElementById('videoOutputFormat')?.value || 'mp4';
+            }
+            if (!outputFormat) throw new Error("Output format not specified.");
+
+            const jobPayload = { tasks: {} };
+            const importTaskName = 'import-file';
+            const convertTaskName = `convert-to-${outputFormat}`;
+            const exportTaskName = 'export-result';
+
+            // 1. Define Import Task
+            if (config.inputType === 'url' && inputFile.type === 'url') { // URL input
+                jobPayload.tasks[importTaskName] = { operation: 'import/url', filename: inputFile.name, url: inputFile.name };
+            } else { // File upload
+                jobPayload.tasks[importTaskName] = { operation: 'import/upload' };
+            }
+            
+            // 2. Define Convert Task
+            jobPayload.tasks[convertTaskName] = {
+                operation: 'convert',
+                input: importTaskName,
+                output_format: outputFormat,
+                engine: config.cloudConvertEngine || undefined, // e.g., 'libreoffice' for some doc conversions
+                ...(config.cloudConvertTaskOptions || {}) // For things like 'optimize' in compress-pdf
+            };
+            if (config.cloudConvertInputFormat) { // Useful for some conversions like PDF to others
+                jobPayload.tasks[convertTaskName].input_format = config.cloudConvertInputFormat;
+            }
+
+
+            // 3. Define Export Task
+            jobPayload.tasks[exportTaskName] = { operation: 'export/url', input: convertTaskName, inline: false, archive_multiple_files: false };
+            
+            updateFileProgress(10, "Creating job...", "file-0");
+            // --- Create Job ---
+            const jobResponse = await fetch('https://api.cloudconvert.com/v2/jobs', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${CLOUDCONVERT_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jobPayload)
+            });
+
+            if (!jobResponse.ok) {
+                const errorData = await jobResponse.json();
+                console.error("CloudConvert Job Creation Error:", errorData);
+                throw new Error(`CloudConvert API Error (Job Create): ${errorData.message || jobResponse.statusText}`);
+            }
+            const jobData = await jobResponse.json();
+            const jobId = jobData.data.id;
+            
+            // --- Upload File (if not URL input) ---
+            if (config.requiresFileUpload !== false && config.inputType !== 'url') {
+                const uploadTask = jobData.data.tasks.find(task => task.name === importTaskName);
+                if (!uploadTask || !uploadTask.result || !uploadTask.result.form) {
+                    throw new Error('CloudConvert Error: Could not get upload form details.');
+                }
+                const uploadUrl = uploadTask.result.form.url;
+                const formData = new FormData();
+                for (const key in uploadTask.result.form.parameters) {
+                    formData.append(key, uploadTask.result.form.parameters[key]);
+                }
+                formData.append('file', inputFile, inputFile.name);
+
+                updateFileProgress(25, "Uploading file...", "file-0");
+                const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: formData });
+                if (!uploadResponse.ok) throw new Error(`File upload failed: ${uploadResponse.statusText}`);
+            } else {
+                 updateFileProgress(25, "Importing URL...", "file-0"); // For URL inputs
+            }
+
+            // --- Poll Job Status ---
+            updateFileProgress(50, "Converting...", "file-0");
+            let jobStatusData;
+            let attempts = 0;
+            const maxAttempts = 60; // Poll for max ~5 minutes (60 * 5s = 300s)
+
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5 seconds
+                const statusResponse = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
+                    headers: { 'Authorization': `Bearer ${CLOUDCONVERT_API_KEY}` }
+                });
+                if (!statusResponse.ok) throw new Error(`CloudConvert API Error (Job Status): ${statusResponse.statusText}`);
+                
+                jobStatusData = await statusResponse.json();
+                const jobState = jobStatusData.data.status;
+                const currentTask = jobStatusData.data.tasks.find(t => t.status === 'processing' || t.status === 'waiting');
+                let progressPercent = 75; // Default conversion progress
+                if (currentTask && currentTask.percent) progressPercent = 50 + (currentTask.percent / 2);
+
+
+                updateFileProgress(Math.min(90, Math.round(progressPercent)), currentTask ? `Task: ${currentTask.name} (${currentTask.percent || 0}%)` : `Status: ${jobState}`, "file-0");
+
+
+                if (jobState === 'finished') break;
+                if (jobState === 'error') {
+                     const failedTask = jobStatusData.data.tasks.find(t => t.status === 'error');
+                     throw new Error(`CloudConvert job failed. ${failedTask ? `Task: ${failedTask.name}, Message: ${failedTask.message}`: ''}`);
+                }
+                attempts++;
+            }
+
+            if (jobStatusData.data.status !== 'finished') throw new Error('CloudConvert job timed out or did not finish.');
+
+            updateFileProgress(95, "Fetching results...", "file-0");
+            // --- Get Download Link ---
+            const exportTaskResult = jobStatusData.data.tasks.find(task => task.name === exportTaskName && task.status === 'finished');
+            if (!exportTaskResult || !exportTaskResult.result || !exportTaskResult.result.files || exportTaskResult.result.files.length === 0) {
+                throw new Error('CloudConvert Error: No output file found.');
+            }
+            
+            convertedFileUrl = exportTaskResult.result.files[0].url;
+            const outputFileName = exportTaskResult.result.files[0].filename;
+
+            convertedFileNameDisplay.textContent = outputFileName;
+            toolOutputTitle.textContent = 'Conversion Complete with CloudConvert!';
+            downloadConvertedFileBtn.classList.remove('hidden');
+            toolOutputSection.style.display = 'block';
+            updateFileProgress(100, "Completed!", "file-0");
+        }
+
+
+        // --- Download Logic ---
+        if (downloadConvertedFileBtn) downloadConvertedFileBtn.addEventListener('click', () => {
+            if (convertedFileUrl) { // For CloudConvert downloads
+                // Forcing download instead of opening in new tab
+                fetch(convertedFileUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = convertedFileNameDisplay.textContent || 'converted_file';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    })
+                    .catch(err => {
+                        console.error("Error downloading file from CloudConvert URL:", err);
+                        alert("Failed to download the file. The link might have expired or there was a network issue.");
+                        // Fallback: try opening in new tab if direct fetch fails (might hit CORS for some CDNs)
+                        // window.open(convertedFileUrl, '_blank');
+                    });
+
+            } else if (convertedFileBlob) { // For client-side generated blobs
+                const url = URL.createObjectURL(convertedFileBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = convertedFileNameDisplay.textContent || 'converted_file';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                a.remove();
+            } else {
+                alert("No converted file available to download.");
+            }
+        });
+
+        // Initialize
+        showMainPage();
+
+    </script>
+</body>
+</html>
